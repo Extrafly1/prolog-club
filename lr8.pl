@@ -13,10 +13,6 @@ grand_pa(X, Y):-parent(X, Parent),parent(Parent, Y),man(X).
 grand_pas(Y):-grand_pa(X, Y),print(X),nl,fail.
 grand_pa_and_son(X, Y):-grand_pa(X, Y); grand_pa(Y, X),print(X - Y),nl,fail.
 uncle(X, Y):-parent(P, Y),brother(X, P).
+uncles(X):-uncle(Uncle, X),print(Uncle),nl,fail.
 
-uncles(X) :-
-    uncle(Uncle, X),
-    print(Uncle), nl,
-    fail.
-uncles(_).
 
