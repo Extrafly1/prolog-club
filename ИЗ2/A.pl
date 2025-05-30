@@ -36,3 +36,39 @@ process_neighbors([Neighbor-CostEdge | Ns], Node, G0, Goal, Open0, Open, Closed)
 
 % Временная заглушка эвристической функции
 h(_, _, 0).
+
+% Запускающий предикат алгоритма A*
+a_star(Start, Goal, Path, Cost) :-
+    h(Start, Goal, H),
+    F is 0 + H,
+    Open = [fgv(F, 0, Start, nil)],
+    Closed = [],
+    a_star(Open, Closed, Goal, Path, Cost).
+
+% Базовый случай: путь найден
+a_star(Open, Closed, Goal, Path, Cost) :-
+    get_min(Open, _, G, Goal, Parent, _),
+    build_path(Closed, Parent, [Goal], Path),
+    Cost = G.
+
+% Рекурсивный поиск пути
+a_star(Open, Closed, Goal, Path, Cost) :-
+    get_min(Open, _F, G, Node, Parent, RestOpen),
+    (member(closed_node(Node, _, _), Closed) 
+    -> a_star(RestOpen, Closed, Goal, Path, Cost)
+    ;  NewClosed = [closed_node(Node, Parent, G) | Closed],
+       findall(Neighbor-CostEdge, edge(Node, Neighbor, CostEdge), Neighbors),
+       process_neighbors(Neighbors, Node, G, Goal, RestOpen, NewOpen, NewClosed),
+       a_star(NewOpen, NewClosed, Goal, Path, Cost)
+    ).
+
+% Построение пути по обратным ссылкам
+build_path(_, nil, Path, Path) :- !.
+build_path(Closed, Node, Acc, Path) :-
+    get_parent(Closed, Node, Parent),
+    build_path(Closed, Parent, [Node | Acc], Path).
+
+% Поиск родителя вершины в закрытом списке
+get_parent([closed_node(Node, Parent, _) | _], Node, Parent) :- !.
+get_parent([_ | T], Node, Parent) :-
+    get_parent(T, Node, Parent).
